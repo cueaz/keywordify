@@ -10,15 +10,15 @@
 import type { ReadonlySignal, Subscribable } from '@keywordify/signals';
 import * as K from '~keywords';
 import { AsyncDirective } from '../async-directive.js';
-import { directive } from '../directive.js';
+import { type DirectiveResult, directive } from '../directive.js';
 import { nothing } from '../lit-html.js';
 
-class WatchDirective extends AsyncDirective {
-  private [K.__signal]?: ReadonlySignal | Subscribable;
+class WatchDirective<T> extends AsyncDirective {
+  private [K.__signal]?: Subscribable<T>;
   private [K.__isSignal]?: boolean;
   private [K.__dispose]?: (() => void) | undefined;
 
-  override [K.render](signal: ReadonlySignal | Subscribable) {
+  override [K.render](signal: Subscribable<T>): T | typeof nothing {
     if (signal !== this[K.__signal]) {
       this[K.__dispose]?.();
       this[K.__signal] = signal;
@@ -43,7 +43,9 @@ class WatchDirective extends AsyncDirective {
     // created by SignalWatcher.performUpdate(). This means that a signal
     // update won't trigger a full element update if it's only passed to
     // watch() and not otherwise accessed by the element.
-    return this[K.__isSignal] ? (signal as ReadonlySignal)[K.peek]() : nothing;
+    return this[K.__isSignal]
+      ? (signal as ReadonlySignal<T>)[K.peek]()
+      : nothing;
   }
 
   protected override [K.disconnected](): void {
@@ -72,8 +74,12 @@ class WatchDirective extends AsyncDirective {
   }
 }
 
+export type Watch = <T>(
+  signal: Subscribable<T>,
+) => DirectiveResult<typeof WatchDirective<T>>;
+
 /**
  * Renders a signal and subscribes to it, updating the part when the signal
  * changes.
  */
-export const watch = directive(WatchDirective);
+export const watch: Watch = directive(WatchDirective);

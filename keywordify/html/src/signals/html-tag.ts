@@ -7,11 +7,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {
-  BRAND_SYMBOL,
-  type ReadonlySignal,
-  type Subscribable,
-} from '@keywordify/signals';
+import { BRAND_SYMBOL, type Subscribable } from '@keywordify/signals';
 import * as K from '~keywords';
 import {
   html as coreHtml,
@@ -34,7 +30,7 @@ export const withWatch =
     for (let i = 0, l = values.length; i < l; i++) {
       const v = values[i];
       if ((v as { [K.brand]?: unknown })?.[K.brand] === BRAND_SYMBOL) {
-        values[i] = watch(v as ReadonlySignal | Subscribable);
+        values[i] = watch(v as Subscribable);
       }
     }
     return coreTag(strings, ...values);

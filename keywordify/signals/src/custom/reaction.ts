@@ -17,8 +17,8 @@ import {
 
 const isFunction = (v: unknown): v is AnyFunction => typeof v === RK.function;
 
-export type Subscribable = Pick<
-  ReadonlySignal<void>,
+export type Subscribable<T = unknown> = Pick<
+  ReadonlySignal<T>,
   typeof K.brand | typeof K.subscribe
 >;
 
@@ -31,7 +31,7 @@ export type Subscribable = Pick<
 export function reaction(
   effectFn: EffectFn,
   options?: EffectOptions,
-): Subscribable {
+): Subscribable<void> {
   // Backing engine purely to dispatch push notifications
   const tickSignal = signal(0);
 
@@ -115,8 +115,8 @@ export function reaction(
  * @returns A unified Subscribable node
  */
 export function mergeLifecycles(
-  ...lifecycles: (Subscribable | ReadonlySignal)[]
-): Subscribable {
+  ...lifecycles: Subscribable[]
+): Subscribable<void> {
   // Unified heartbeat for all bundled lifecycles
   const tickSignal = signal(0);
 
