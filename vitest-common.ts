@@ -19,6 +19,9 @@ export const commonConfig = (options?: CommonConfigOptions): ViteUserConfig => {
   const projects: TestProjectConfiguration[] = [];
   for (const isDev of [false, true]) {
     projects.push({
+      optimizeDeps: {
+        exclude: ['~keywords'],
+      },
       resolve: {
         conditions: [isDev ? 'development' : 'production'],
       },
