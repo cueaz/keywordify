@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/cueaz/keywordify/compare/html-v1.0.0...html-v1.1.1) (2026-06-02)
+
+
+### Features
+
+* **html:** disable unsafe directives ([3552c22](https://github.com/cueaz/keywordify/commit/3552c22ce27ab679983fd21eb429468ac0d72bbe))
+
 ## 1.0.0 (2026-06-02)
 
 
