@@ -48,7 +48,7 @@ export interface StaticValue {
  * we don't care about the key, so we break ties via (2) and use the empty
  * string.
  */
-const brand = Symbol.for('');
+const brand = Symbol.for(K.LIT_STATIC);
 
 /** Safely extracts the string part of a StaticValue. */
 const unwrapStaticValue = (value: unknown): string | undefined => {

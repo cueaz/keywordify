@@ -31,9 +31,9 @@ export * from './directives/ref.js';
 export * from './directives/repeat.js';
 export * from './directives/style-map.js';
 export * from './directives/template-content.js';
-export * from './directives/unsafe-html.js';
-export * from './directives/unsafe-mathml.js';
-export * from './directives/unsafe-svg.js';
+// export * from './directives/unsafe-html.js';
+// export * from './directives/unsafe-mathml.js';
+// export * from './directives/unsafe-svg.js';
 export * from './directives/until.js';
 export * from './directives/when.js';
 export * from './is-server.js';
@@ -43,7 +43,7 @@ export * from './signals/watch.js';
 export {
   literal,
   type StaticValue,
-  unsafeStatic,
+  // unsafeStatic,
   withStatic,
 } from './static.js';
 
