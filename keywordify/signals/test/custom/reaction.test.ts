@@ -6,7 +6,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import * as K from '~keywords';
-import { mergeLifecycles, reaction } from '../../src/custom/reaction.js';
+import { fuse, reaction } from '../../src/custom/reaction.js';
 import {
   BRAND_SYMBOL,
   batch,
@@ -711,13 +711,85 @@ describe('reaction()', () => {
   });
 
   //#endregion No Dependencies
+
+  //#region Regression: refCount desync when listener throws (Bug #3)
+
+  it('should not desync refCount if listener throws on initial subscribe call', () => {
+    const s = signal(0);
+    const r = reaction(() => {
+      s[K.value];
+    });
+
+    let shouldThrow = true;
+    expect(() =>
+      r[K.subscribe](() => {
+        if (shouldThrow) {
+          throw new Error('listener boom');
+        }
+      }),
+    ).to.throw('listener boom');
+
+    shouldThrow = false;
+    const spy = vi.fn();
+    r[K.subscribe](spy);
+    spy.mockClear();
+
+    s[K.value] = 42;
+    expect(spy).toHaveBeenCalledOnce();
+  });
+
+  it('should properly dispose core effect after listener-throw + multi-subscribe cycle', () => {
+    const s = signal(0);
+    let effectRunCount = 0;
+    const r = reaction(() => {
+      s[K.value];
+      effectRunCount++;
+    });
+
+    // Sub 1: listener throws → refCount++ but no dispose returned
+    let shouldThrow = true;
+    expect(() =>
+      r[K.subscribe](() => {
+        if (shouldThrow) {
+          throw new Error('boom');
+        }
+      }),
+    ).to.throw('boom');
+    shouldThrow = false;
+
+    // Sub 2 + Sub 3: normal subscribers
+    const spy2 = vi.fn();
+    const spy3 = vi.fn();
+    const dispose2 = r[K.subscribe](spy2);
+    const dispose3 = r[K.subscribe](spy3);
+    spy2.mockClear();
+    spy3.mockClear();
+    effectRunCount = 0;
+
+    // Both should be notified
+    s[K.value] = 10;
+    expect(spy2).toHaveBeenCalledOnce();
+    expect(spy3).toHaveBeenCalledOnce();
+
+    // Dispose both — core effect should eventually be disposed
+    dispose2();
+    dispose3();
+    effectRunCount = 0;
+
+    s[K.value] = 20;
+    // If refCount desynced, the core effect is still alive here
+    // This is the observable consequence of Bug #3
+    expect(effectRunCount).to.equal(0);
+  });
+
+  //#endregion Regression: refCount desync when listener throws
 });
 
-describe('mergeLifecycles()', () => {
+describe('fuse()', () => {
   //#region Interface & Brand
 
   it('should return a Subscribable with the correct brand', () => {
-    const merged = mergeLifecycles();
+    const merged = fuse();
     expect(merged[K.brand]).to.equal(BRAND_SYMBOL);
   });
 
@@ -735,7 +807,7 @@ describe('mergeLifecycles()', () => {
       s2[K.value];
     });
 
-    const merged = mergeLifecycles(r1, r2);
+    const merged = fuse(r1, r2);
     const spy = vi.fn();
     merged[K.subscribe](spy);
     spy.mockClear();
@@ -762,7 +834,7 @@ describe('mergeLifecycles()', () => {
       s3[K.value];
     });
 
-    const merged = mergeLifecycles(r1, r2, r3);
+    const merged = fuse(r1, r2, r3);
     const spy = vi.fn();
     merged[K.subscribe](spy);
     spy.mockClear();
@@ -790,7 +862,7 @@ describe('mergeLifecycles()', () => {
       r2RunCount++;
     });
 
-    const merged = mergeLifecycles(r1, r2);
+    const merged = fuse(r1, r2);
     const dispose1 = merged[K.subscribe](() => {});
     const dispose2 = merged[K.subscribe](() => {});
 
@@ -819,7 +891,7 @@ describe('mergeLifecycles()', () => {
       s[K.value];
     });
 
-    const merged = mergeLifecycles(r);
+    const merged = fuse(r);
     const dispose1 = merged[K.subscribe](() => {});
     dispose1();
 
@@ -837,7 +909,7 @@ describe('mergeLifecycles()', () => {
       s[K.value];
     });
 
-    const merged = mergeLifecycles(r);
+    const merged = fuse(r);
     const spy1 = vi.fn();
     const spy2 = vi.fn();
     merged[K.subscribe](spy1);
@@ -855,7 +927,7 @@ describe('mergeLifecycles()', () => {
   //#region Empty Lifecycles
 
   it('should handle empty lifecycles array without error', () => {
-    const merged = mergeLifecycles();
+    const merged = fuse();
     const spy = vi.fn();
     const dispose = merged[K.subscribe](spy);
     expect(() => dispose()).not.to.throw();
@@ -868,7 +940,7 @@ describe('mergeLifecycles()', () => {
   it('should work with plain signals as Subscribable children', () => {
     const s = signal(0);
     // A plain signal satisfies Subscribable (has brand and subscribe)
-    const merged = mergeLifecycles(s);
+    const merged = fuse(s);
     const spy = vi.fn();
     merged[K.subscribe](spy);
     spy.mockClear();
@@ -884,7 +956,7 @@ describe('mergeLifecycles()', () => {
       s1[K.value];
     });
 
-    const merged = mergeLifecycles(r, s2);
+    const merged = fuse(r, s2);
     const spy = vi.fn();
     merged[K.subscribe](spy);
     spy.mockClear();
@@ -899,9 +971,9 @@ describe('mergeLifecycles()', () => {
 
   //#endregion Mixed Signal Types
 
-  //#region Nested mergeLifecycles
+  //#region Nested fuse
 
-  it('should support nesting mergeLifecycles', () => {
+  it('should support nesting fuse', () => {
     const s1 = signal(0);
     const s2 = signal(0);
     const r1 = reaction(() => {
@@ -911,8 +983,8 @@ describe('mergeLifecycles()', () => {
       s2[K.value];
     });
 
-    const inner = mergeLifecycles(r1);
-    const outer = mergeLifecycles(inner, r2);
+    const inner = fuse(r1);
+    const outer = fuse(inner, r2);
 
     const spy = vi.fn();
     outer[K.subscribe](spy);
@@ -926,12 +998,12 @@ describe('mergeLifecycles()', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  //#endregion Nested mergeLifecycles
+  //#endregion Nested fuse
 
   //#region Unsubscribe Idempotency
 
   it('should allow calling unsubscribe multiple times without error', () => {
-    const merged = mergeLifecycles();
+    const merged = fuse();
     const dispose = merged[K.subscribe](() => {});
     dispose();
     expect(() => dispose()).not.to.throw();
@@ -947,7 +1019,7 @@ describe('mergeLifecycles()', () => {
       s[K.value];
     });
 
-    const merged = mergeLifecycles(r);
+    const merged = fuse(r);
     const spy = vi.fn();
     merged[K.subscribe](spy);
     spy.mockClear();
@@ -970,7 +1042,7 @@ describe('mergeLifecycles()', () => {
       s[K.value];
     });
 
-    const merged = mergeLifecycles(r);
+    const merged = fuse(r);
     const dispose = merged[K.subscribe](() => {});
     dispose();
     dispose(); // Second call should be a no-op
@@ -1001,7 +1073,7 @@ describe('mergeLifecycles()', () => {
       throw new Error('child boom');
     });
 
-    const merged = mergeLifecycles(r1, r2);
+    const merged = fuse(r1, r2);
 
     // First subscribe attempt should throw due to r2
     expect(() => merged[K.subscribe](() => {})).to.throw('child boom');
@@ -1027,7 +1099,7 @@ describe('mergeLifecycles()', () => {
       }
     });
 
-    const merged = mergeLifecycles(r1, r2);
+    const merged = fuse(r1, r2);
 
     // First attempt fails
     expect(() => merged[K.subscribe](() => {})).to.throw('init fail');
@@ -1043,4 +1115,45 @@ describe('mergeLifecycles()', () => {
   });
 
   //#endregion Regression: Partial subscribe leak
+
+  //#region Regression: refCount desync when listener throws (Bug #3)
+
+  it('should not desync refCount if listener throws on initial subscribe call', () => {
+    const s = signal(0);
+    let effectRunCount = 0;
+    const r = reaction(() => {
+      s[K.value];
+      effectRunCount++;
+    });
+
+    const merged = fuse(r);
+
+    // listener throws on initial invocation
+    let shouldThrow = true;
+    expect(() =>
+      merged[K.subscribe](() => {
+        if (shouldThrow) {
+          throw new Error('listener boom');
+        }
+      }),
+    ).to.throw('listener boom');
+    shouldThrow = false;
+
+    // After throw, a second subscriber + dispose cycle should properly clean up
+    const spy = vi.fn();
+    const dispose = merged[K.subscribe](spy);
+    spy.mockClear();
+    effectRunCount = 0;
+
+    s[K.value] = 1;
+    expect(spy).toHaveBeenCalledOnce();
+
+    // Full dispose — core effect and children must be torn down
+    dispose();
+    effectRunCount = 0;
+    s[K.value] = 2;
+    expect(effectRunCount).to.equal(0);
+  });
+
+  //#endregion Regression: refCount desync when listener throws
 });

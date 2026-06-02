@@ -17,29 +17,51 @@ import {
 
 const isFunction = (v: unknown): v is AnyFunction => typeof v === RK.function;
 
+/**
+ * A strictly segregated subscription interface exposing only brand
+ * verification and the subscribe/unsubscribe lifecycle contract.
+ * Used as the public surface for both `reaction()` and `fuse()`.
+ */
 export type Subscribable<T = unknown> = Pick<
   ReadonlySignal<T>,
   typeof K.brand | typeof K.subscribe
 >;
 
 /**
- * A lazy-evaluated, multicast-supported side-effect node
- * @param effectFn The side effect to execute
- * @param options DevTools identifier and engine options
- * @returns A segregated Subscribable interface
+ * A lazy-evaluated, multicast-supported side-effect node.
+ *
+ * The core effect is created on the first `subscribe()` call and disposed
+ * when the last listener unsubscribes. Re-subscribing after full teardown
+ * re-creates the core effect from scratch.
+ *
+ * @param effectFn The side effect to execute. May return a cleanup function.
+ *   Receives a shadowed `this` context where `this.dispose()` triggers
+ *   permanent teardown of the reaction (self-disposal).
+ * @param options DevTools identifier and engine options forwarded to the
+ *   underlying `effect()` call.
+ * @returns A strictly segregated Subscribable interface.
+ * @throws Re-throws if `effectFn` throws during the initial execution
+ *   triggered by the first subscriber, or if a `listener` throws during
+ *   its initial synchronous invocation by `Signal.prototype.subscribe`.
  */
 export function reaction(
   effectFn: EffectFn,
   options?: EffectOptions,
 ): Subscribable<void> {
-  // Backing engine purely to dispatch push notifications
+  // Backing signal purely to dispatch push notifications to listeners.
+  // Its value is a monotonic counter; each effectFn run bumps it by 1.
   const tickSignal = signal(0);
 
   let disposeCoreEffect: (() => void) | null = null;
   let refCount = 0;
-  let isExecuting = false; // Mutex lock for Re-entrancy defense
-  let isSelfDisposed = false; // Memory leak guard for manual this.dispose()
+  let isExecuting = false; // Mutex lock for re-entrancy defense
+  let isSelfDisposed = false; // Permanent teardown flag for this.dispose()
 
+  /**
+   * Permanently disables this reaction. Idempotent: safe to call multiple
+   * times. Sets `isSelfDisposed` so the core effect's guard clause
+   * (`if (isExecuting || isSelfDisposed)`) prevents further execution.
+   */
   const forceTeardown = () => {
     isSelfDisposed = true;
     if (disposeCoreEffect) {
@@ -62,6 +84,19 @@ export function reaction(
             return;
           }
 
+          // Context Shadowing: create a prototype-chained object that
+          // inherits all of the Effect instance's properties (`this`),
+          // but overrides `_dispose` so that `this.dispose()` in user
+          // code triggers `forceTeardown()` before delegating to the
+          // engine's original `Effect.prototype._dispose`.
+          //
+          // Chain: effectContext[K._dispose] (override)
+          //   -> forceTeardown()
+          //   -> self[K._dispose]() (original Effect._dispose)
+          //
+          // User calls `this[K.dispose]()` (public key) ->
+          //   Effect.prototype[K.dispose] -> `this[K._dispose]()` ->
+          //   hits the override on effectContext.
           const self = this as typeof this & { [K._dispose]: () => void };
           const effectContext = Object.create(self);
           effectContext[K._dispose] = () => {
@@ -85,10 +120,30 @@ export function reaction(
         }, options);
       }
 
-      // Register listener after effect creation to prevent double-firing glitches.
+      // Register listener AFTER effect creation to prevent double-firing:
+      // the effect bumps tickSignal during its first run, and if the
+      // listener were already subscribed, it would fire for that bump
+      // AND again from tickSignal.subscribe's initial invocation.
       refCount++;
-      const disposeNative = tickSignal[K.subscribe](() => listener());
+      let disposeNative: () => void;
+      try {
+        disposeNative = tickSignal[K.subscribe](() => listener());
+      } catch (err) {
+        // Rollback: listener threw during its initial synchronous
+        // invocation inside Signal.prototype.subscribe. The internal
+        // subscribe-effect is auto-disposed by the engine, but refCount
+        // was already incremented. Undo it — and tear down the core
+        // effect if this was the sole subscriber.
+        refCount--;
+        if (refCount === 0 && disposeCoreEffect && !isSelfDisposed) {
+          disposeCoreEffect();
+          disposeCoreEffect = null;
+        }
+        throw err;
+      }
 
+      // Idempotent unsubscribe: prevents refCount from going negative
+      // if the caller invokes the returned dispose function more than once.
       let disposed = false;
       return () => {
         if (disposed) {
@@ -110,19 +165,29 @@ export function reaction(
 
 /**
  * A Multiplexer (fan-in) that synchronizes the lifecycles of multiple
- * Subscribable nodes into a single, cohesive orchestrator
- * @param lifecycles An array of Subscribable nodes (Reactions or core Signals)
- * @returns A unified Subscribable node
+ * Subscribable nodes into a single, cohesive orchestrator.
+ *
+ * All children are subscribed on the first `subscribe()` call and torn
+ * down when the last listener unsubscribes. If a child's subscribe
+ * throws, all previously subscribed children are rolled back before
+ * the error is re-thrown.
+ *
+ * @param lifecycles Subscribable nodes (reactions or core signals)
+ *   to multiplex.
+ * @returns A unified Subscribable node whose listeners are notified
+ *   whenever any child fires.
+ * @throws Re-throws if any child's `subscribe()` throws (with rollback
+ *   of earlier children), or if a `listener` throws during its initial
+ *   synchronous invocation.
  */
-export function mergeLifecycles(
-  ...lifecycles: Subscribable[]
-): Subscribable<void> {
-  // Unified heartbeat for all bundled lifecycles
+export function fuse(...lifecycles: Subscribable[]): Subscribable<void> {
+  // Unified heartbeat: bumped by any child notification.
   const tickSignal = signal(0);
 
   let refCount = 0;
   let teardowns: (() => void)[] = [];
 
+  // Shared callback subscribed to each child; bumps the heartbeat.
   const onChildNotify = () => {
     tickSignal[K.value] = tickSignal[K.peek]() + 1;
   };
@@ -132,6 +197,8 @@ export function mergeLifecycles(
 
     [K.subscribe](listener: () => void): () => void {
       if (refCount === 0) {
+        // Subscribe to all children with rollback on partial failure:
+        // if child N throws, children 0..(N-1) are unsubscribed.
         const pending: (() => void)[] = [];
         try {
           for (let i = 0; i < lifecycles.length; i++) {
@@ -147,8 +214,21 @@ export function mergeLifecycles(
       }
 
       refCount++;
-      const disposeNative = tickSignal[K.subscribe](() => listener());
+      let disposeNative: () => void;
+      try {
+        disposeNative = tickSignal[K.subscribe](() => listener());
+      } catch (err) {
+        // Rollback: listener threw during initial invocation.
+        refCount--;
+        if (refCount === 0) {
+          while (teardowns.length > 0) {
+            teardowns.pop()?.();
+          }
+        }
+        throw err;
+      }
 
+      // Idempotent unsubscribe: prevents refCount corruption on double-dispose.
       let disposed = false;
       return () => {
         if (disposed) {
