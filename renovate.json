@@ -6,8 +6,10 @@
   "automergeType": "pr",
   "packageRules": [
     {
-      "matchPackagePatterns": ["^@keywordify/"],
-      "enabled": false
+      "enabled": false,
+      "matchPackageNames": [
+        "/^@keywordify//"
+      ]
     }
   ]
 }
