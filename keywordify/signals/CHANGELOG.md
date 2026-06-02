@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/cueaz/keywordify/compare/signals-v1.0.0...signals-v1.1.0) (2026-06-02)
+
+
+### Features
+
+* **signals:** fix refCount desync when listener throws and rename mergeLifecycles to fuse ([29cc38f](https://github.com/cueaz/keywordify/commit/29cc38f4633a4ec276f04db22dea621d657956f3))
+
 ## 1.0.0 (2026-06-02)
 
 
