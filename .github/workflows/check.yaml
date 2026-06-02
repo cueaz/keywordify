@@ -9,6 +9,8 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      WIREIT_LOGGER: metrics
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
@@ -19,5 +21,5 @@ jobs:
       - run: pnpm ci
       - run: pnpm run rbuild
       - run: pnpm run rcheck
-      - run: pnpm playwright install chromium --with-deps
+      - run: pnpm exec playwright install chromium --with-deps
       - run: pnpm run rtest

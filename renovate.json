@@ -3,5 +3,11 @@
   "extends": ["config:recommended"],
   "automerge": true,
   "automergeStrategy": "squash",
-  "automergeType": "pr"
+  "automergeType": "pr",
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@keywordify/"],
+      "enabled": false
+    }
+  ]
 }
