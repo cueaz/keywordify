@@ -1,0 +1,10 @@
+{
+  "extends": ["../../tsconfig.base.json"],
+  "include": ["src", "test"],
+  "compilerOptions": {
+    "paths": {
+      "~keywords": ["./node_modules/~keywords/index.d.ts"],
+      "~keywords/*": ["./node_modules/~keywords/*.d.ts"]
+    }
+  }
+}

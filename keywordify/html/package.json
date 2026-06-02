@@ -1,0 +1,106 @@
+{
+  "name": "@keywordify/html",
+  "version": "0.0.1",
+  "description": "A keywordified fork of lit-html",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cueaz/keywordify.git",
+    "directory": "keywordify/html"
+  },
+  "license": "BSD-3-Clause",
+  "author": "cueaz",
+  "type": "module",
+  "sideEffects": false,
+  "keywordified": true,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/__dev__/index.d.ts",
+      "development": "./dist/__dev__/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepack": "clean-pkg-json --keep keywordified",
+    "build": "wireit",
+    "build:rolldown": "wireit",
+    "test": "wireit",
+    "test:vitest": "wireit",
+    "typegen": "wireit",
+    "typegen:keywords": "wireit"
+  },
+  "peerDependencies": {
+    "@keywordify/signals": ">=0.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@keywordify/signals": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@keywordify/signals": "workspace:*",
+    "@types/trusted-types": "catalog:"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:rolldown"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "test:vitest"
+      ]
+    },
+    "typegen": {
+      "dependencies": [
+        "typegen:keywords"
+      ]
+    },
+    "deps:runtime": {
+      "dependencies": [
+        "../signals:build"
+      ]
+    },
+    "build:rolldown": {
+      "command": "rolldown --config",
+      "dependencies": [
+        "../..:rfiles:rolldown",
+        "typegen"
+      ],
+      "files": [
+        "src/**",
+        "rolldown.config.ts"
+      ],
+      "output": [
+        "dist/**"
+      ]
+    },
+    "test:vitest": {
+      "command": "vitest run",
+      "dependencies": [
+        "../..:rfiles:vitest",
+        "deps:runtime"
+      ],
+      "files": [
+        "{src,test}/**",
+        "vitest.config.ts"
+      ],
+      "output": []
+    },
+    "typegen:keywords": {
+      "command": "keywords",
+      "files": [
+        "{src,test}/**/*.{ts,tsx}"
+      ],
+      "output": [
+        "node_modules/~keywords/**"
+      ]
+    }
+  }
+}

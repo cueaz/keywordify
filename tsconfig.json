@@ -1,0 +1,11 @@
+{
+  "extends": ["./tsconfig.base.json"],
+  "include": ["*-common.ts", "**/*.config.ts"],
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "references": [
+    { "path": "./keywordify/html" },
+    { "path": "./keywordify/signals" }
+  ]
+}
