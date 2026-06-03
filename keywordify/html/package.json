@@ -85,7 +85,8 @@
       "command": "vitest run",
       "dependencies": [
         "../..:rfiles:vitest",
-        "deps:runtime"
+        "deps:runtime",
+        "typegen"
       ],
       "files": [
         "{src,test}/**",
