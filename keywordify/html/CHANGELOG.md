@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/cueaz/keywordify/compare/html-v1.1.3...html-v1.1.4) (2026-06-03)
+
+
+### Bug Fixes
+
+* force patch release ([57c0b00](https://github.com/cueaz/keywordify/commit/57c0b003ba58a74ee64952e1847b198346363e5d))
+
 ## [1.1.3](https://github.com/cueaz/keywordify/compare/html-v1.1.2...html-v1.1.3) (2026-06-03)
 
 
