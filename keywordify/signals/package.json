@@ -1,7 +1,7 @@
 {
   "name": "@keywordify/signals",
   "version": "1.1.2",
-  "description": "A keywordified fork of @preact/signals-core",
+  "description": "A keywordified fork of @preact/signals-core with custom modifications",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cueaz/keywordify.git",
