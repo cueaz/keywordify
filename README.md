@@ -1,10 +1,5 @@
 # Keywordify
 
-[![Github CI][ci-badge]][ci-url]
-
-[ci-badge]: https://github.com/cueaz/keywordify/actions/workflows/check.yaml/badge.svg
-[ci-url]: https://github.com/cueaz/keywordify/actions/workflows/check.yaml
-
 > [!WARNING]
 > **Disclaimer**: This repository contains highly opinionated, personal modifications of the original libraries created for demonstration and research purposes. It is **not intended nor suitable for general public use**.
 
