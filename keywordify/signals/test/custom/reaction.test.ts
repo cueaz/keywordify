@@ -7,13 +7,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as K from '~keywords';
 import { fuse, reaction } from '../../src/custom/reaction.js';
-import {
-  BRAND_SYMBOL,
-  batch,
-  computed,
-  effect,
-  signal,
-} from '../../src/signal.js';
+import { BRAND_SYMBOL } from '../../src/internal/brand.js';
+import { batch, computed, effect, signal } from '../../src/signal.js';
 
 describe('reaction()', () => {
   //#region Interface & Brand
