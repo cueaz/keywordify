@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.5](https://github.com/cueaz/keywordify/compare/html-v1.1.4...html-v1.1.5) (2026-06-03)
+
+
+### Bug Fixes
+
+* **html:** add explicit types to prevent tsc from evaluating computed keys to literals in dts emit ([72db77c](https://github.com/cueaz/keywordify/commit/72db77cd4f0dd6aa4e291a168e054b708aba1d30))
+
 ## [1.1.4](https://github.com/cueaz/keywordify/compare/html-v1.1.3...html-v1.1.4) (2026-06-03)
 
 
