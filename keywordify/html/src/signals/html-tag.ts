@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import { BRAND_SYMBOL, type Subscribable } from '@keywordify/signals';
+import type { Subscribable } from '@keywordify/signals';
 import * as K from '~keywords';
 import {
   html as coreHtml,
@@ -16,6 +16,8 @@ import {
   type TemplateResult,
 } from '../lit-html.js';
 import { watch } from './watch.js';
+
+const BRAND_SYMBOL = Symbol.for(K.PREACT_SIGNALS);
 
 /**
  * Wraps a lit-html template tag function (`html` or `svg`) to add support for

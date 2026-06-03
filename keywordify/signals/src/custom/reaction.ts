@@ -5,8 +5,8 @@
  */
 
 import * as K from '~keywords';
+import { BRAND_SYMBOL } from '../internal/brand.js';
 import {
-  BRAND_SYMBOL,
   type EffectFn,
   type EffectOptions,
   effect,

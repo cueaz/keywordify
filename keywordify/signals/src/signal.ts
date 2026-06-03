@@ -8,12 +8,9 @@
  */
 
 import * as K from '~keywords';
+import { BRAND_SYMBOL } from './internal/brand.js';
 
 const DEV_MODE = import.meta.custom.DEV_MODE;
-
-// An named symbol/brand for detecting Signal instances even when they weren't
-// created using the same signals library version.
-export const BRAND_SYMBOL = Symbol.for(K.PREACT_SIGNALS);
 
 // Flags for Computed and Effect.
 const RUNNING = 1 << 0;
