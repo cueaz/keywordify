@@ -8,13 +8,10 @@
  */
 
 import * as K from '~keywords';
-import * as RK from '~keywords/raw';
 import { Directive, directive, type PartInfo, PartType } from '../directive.js';
 import { noChange, nothing, type TemplateResult } from '../lit-html.js';
 
 const DEV_MODE = import.meta.custom.DEV_MODE;
-
-const isString = (x: unknown): x is string => typeof x === RK.string;
 
 const HTML_RESULT = 1;
 
@@ -51,7 +48,7 @@ export class UnsafeHTMLDirective extends Directive {
     if (value === noChange) {
       return value;
     }
-    if (!isString(value)) {
+    if (typeof value !== 'string') {
       if (DEV_MODE) {
         throw new Error(
           `${
@@ -67,7 +64,7 @@ export class UnsafeHTMLDirective extends Directive {
     }
     this[K._value] = value;
     const strings = [value] as unknown as TemplateStringsArray;
-    (strings as unknown as { raw: TemplateStringsArray })[RK.raw] = strings;
+    (strings as unknown as { raw: TemplateStringsArray }).raw = strings;
     // WARNING: impersonating a TemplateResult like this is extremely
     // dangerous. Third-party directives should not do this.
     this[K._templateResult] = {

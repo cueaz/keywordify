@@ -5,7 +5,6 @@
  */
 
 import * as K from '~keywords';
-import * as RK from '~keywords/raw';
 import {
   BRAND_SYMBOL,
   type EffectFn,
@@ -14,8 +13,6 @@ import {
   type ReadonlySignal,
   signal,
 } from '../signal.js';
-
-const isFunction = (v: unknown): v is AnyFunction => typeof v === RK.function;
 
 /**
  * A strictly segregated subscription interface exposing only brand
@@ -101,7 +98,7 @@ export function reaction(
           const effectContext = Object.create(self);
           effectContext[K._dispose] = () => {
             forceTeardown();
-            if (isFunction(self[K._dispose])) {
+            if (typeof self[K._dispose] === 'function') {
               self[K._dispose]();
             }
           };

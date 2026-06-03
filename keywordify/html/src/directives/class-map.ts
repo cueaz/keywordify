@@ -8,7 +8,6 @@
  */
 
 import * as K from '~keywords';
-import * as RK from '~keywords/raw';
 import {
   Directive,
   type DirectiveParameters,
@@ -39,7 +38,7 @@ class ClassMapDirective extends Directive {
     super(partInfo);
     if (
       partInfo[K.type] !== PartType[K.ATTRIBUTE] ||
-      partInfo[K.name] !== RK.class ||
+      partInfo[K.name] !== 'class' ||
       (partInfo[K.strings]?.length as number) > 2
     ) {
       if (DEV_MODE) {

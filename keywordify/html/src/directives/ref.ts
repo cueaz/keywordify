@@ -8,11 +8,8 @@
  */
 
 import * as K from '~keywords';
-import * as RK from '~keywords/raw';
 import { AsyncDirective, directive } from '../async-directive.js';
 import { type ElementPart, nothing } from '../lit-html.js';
-
-const isFunction = (v: unknown): v is AnyFunction => typeof v === RK.function;
 
 const global = globalThis;
 
@@ -87,7 +84,7 @@ class RefDirective extends AsyncDirective {
     if (!this[K.isConnected]) {
       element = undefined;
     }
-    if (isFunction(this[K._ref])) {
+    if (typeof this[K._ref] === 'function') {
       // If the current ref was called with a previous value, call with
       // `undefined`; We do this to ensure callbacks are called in a consistent
       // way regardless of whether a ref might be moving up in the tree (in
@@ -118,7 +115,7 @@ class RefDirective extends AsyncDirective {
   }
 
   private get [K._lastElementForRef]() {
-    return isFunction(this[K._ref])
+    return typeof this[K._ref] === 'function'
       ? lastElementForContextAndCallback
           .get(this[K._context] ?? global)
           ?.get(this[K._ref])

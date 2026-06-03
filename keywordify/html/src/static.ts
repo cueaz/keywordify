@@ -11,7 +11,6 @@
 // `packages/lit/src/index.all.ts`.
 
 import * as K from '~keywords';
-import * as RK from '~keywords/raw';
 import {
   html as coreHtml,
   mathml as coreMathml,
@@ -168,7 +167,7 @@ export const withStatic =
         // Beware: in general this pattern is unsafe, and doing so may bypass
         // lit's security checks and allow an attacker to execute arbitrary
         // code and inject arbitrary content.
-        (staticStrings as unknown as { raw: readonly string[] })[RK.raw] =
+        (staticStrings as unknown as { raw: readonly string[] }).raw =
           staticStrings;
         cachedStrings = staticStrings as unknown as TemplateStringsArray;
         stringsCache.set(key, cachedStrings);

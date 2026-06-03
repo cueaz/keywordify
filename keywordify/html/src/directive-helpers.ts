@@ -8,7 +8,6 @@
  */
 
 import * as K from '~keywords';
-import * as RK from '~keywords/raw';
 import type {
   AttributePartInfo,
   DirectiveClass,
@@ -53,8 +52,7 @@ const wrap =
  * See https://tc39.github.io/ecma262/#sec-typeof-operator
  */
 export const isPrimitive = (value: unknown): value is Primitive =>
-  value === null ||
-  (typeof value !== RK.object && typeof value !== RK.function);
+  value === null || (typeof value !== 'object' && typeof value !== 'function');
 
 export const TemplateResultType = {
   [K.HTML]: 1,

@@ -7,10 +7,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as RK from '~keywords/raw';
-
-const isFunction = (v: unknown): v is AnyFunction => typeof v === RK.function;
-
 /**
  * Returns an iterable containing the values in `items` interleaved with the
  * `joiner` value.
@@ -33,7 +29,7 @@ export function join<I, J>(
   joiner: J,
 ): Iterable<I | J>;
 export function* join<I, J>(items: Iterable<I> | undefined, joiner: J) {
-  const isFunc = isFunction(joiner);
+  const isFunc = typeof joiner === 'function';
   if (items !== undefined) {
     let i = -1;
     for (const value of items) {

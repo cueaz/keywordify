@@ -8,7 +8,6 @@
  */
 
 import * as K from '~keywords';
-import * as RK from '~keywords/raw';
 import {
   Directive,
   type DirectiveParameters,
@@ -19,8 +18,6 @@ import {
 import { type AttributePart, noChange } from '../lit-html.js';
 
 const DEV_MODE = import.meta.custom.DEV_MODE;
-
-const isString = (x: unknown): x is string => typeof x === RK.string;
 
 /**
  * A key-value set of CSS properties and values.
@@ -33,7 +30,7 @@ export interface StyleInfo {
   [name: string]: string | number | undefined | null;
 }
 
-const important = RK.important;
+const important = 'important';
 // The leading space is important
 const importantFlag = ` !${important}`;
 // How many characters to remove from a value, as a negative number
@@ -46,7 +43,7 @@ class StyleMapDirective extends Directive {
     super(partInfo);
     if (
       partInfo[K.type] !== PartType[K.ATTRIBUTE] ||
-      partInfo[K.name] !== RK.style ||
+      partInfo[K.name] !== 'style' ||
       (partInfo[K.strings]?.length as number) > 2
     ) {
       if (DEV_MODE) {
@@ -111,7 +108,8 @@ class StyleMapDirective extends Directive {
       const value = styleInfo[name];
       if (value != null) {
         this[K._previousStyleProperties].add(name);
-        const isImportant = isString(value) && value.endsWith(importantFlag);
+        const isImportant =
+          typeof value === 'string' && value.endsWith(importantFlag);
         if (name.includes('-') || isImportant) {
           style.setProperty(
             name,

@@ -8,7 +8,6 @@
  */
 
 import * as K from '~keywords';
-import * as RK from '~keywords/raw';
 import {
   AsyncDirective,
   type DirectiveResult,
@@ -20,7 +19,7 @@ import { Pauser, PseudoWeakRef } from './private-async-helpers.js';
 
 const isPromise = (x: unknown): x is Promise<unknown> => {
   return (
-    !isPrimitive(x) && typeof (x as { then?: unknown }).then === RK.function
+    !isPrimitive(x) && typeof (x as { then?: unknown }).then === 'function'
   );
 };
 // Effectively infinity, but a SMI.

@@ -13,13 +13,9 @@ import type {
   TrustedTypesWindow,
 } from 'trusted-types/lib/index.js';
 import * as K from '~keywords';
-import * as RK from '~keywords/raw';
 import type { Directive, DirectiveResult, PartInfo } from './directive.js';
 
 const DEV_MODE = import.meta.custom.DEV_MODE;
-
-const isFunction = (v: unknown): v is AnyFunction => typeof v === RK.function;
-const isNumber = (v: unknown): v is number => typeof v === RK.number;
 
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = false;
@@ -408,13 +404,12 @@ const createMarker = () => d.createComment('');
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 const isPrimitive = (value: unknown): value is Primitive =>
-  value === null ||
-  (typeof value !== RK.object && typeof value !== RK.function);
+  value === null || (typeof value !== 'object' && typeof value !== 'function');
 const isArray = Array.isArray;
 const isIterable = (value: unknown): value is Iterable<unknown> =>
   isArray(value) ||
   typeof (value as { [Symbol.iterator]?: unknown })?.[Symbol.iterator] ===
-    RK.function;
+    'function';
 
 const SPACE_CHAR = `[ \t\n\f\r]`;
 const ATTR_VALUE_CHAR = `[^ \t\n\f\r"'\`<>=]`;
@@ -800,7 +795,7 @@ function trustFromTemplateString(
   // though we might need to make that check inside of the html and svg
   // functions, because precompiled templates don't come in as
   // TemplateStringArray objects.
-  if (!isArray(tsa) || !Object.hasOwn(tsa, RK.raw)) {
+  if (!isArray(tsa) || !Object.hasOwn(tsa, 'raw')) {
     if (DEV_MODE) {
       let message = 'invalid template strings array';
       message = `
@@ -1051,7 +1046,7 @@ class Template {
               `Expressions are not supported inside \`${tag}\` ` +
               `elements. See https://lit.dev/msg/expression-in-${tag} for more ` +
               `information.`;
-            if (tag === RK.template) {
+            if (tag === 'template') {
               throw new Error(m);
             } else issueWarning('', m);
           }
@@ -1190,7 +1185,7 @@ class Template {
   // Overridden via `litHtmlPolyfillSupport` to provide platform support.
   /** @nocollapse */
   static [K.createElement](html: TrustedHTML, _options?: RenderOptions) {
-    const el = d.createElement(RK.template);
+    const el = d.createElement('template');
     el.innerHTML = html as unknown as string;
     return el;
   }
@@ -1602,10 +1597,10 @@ class ChildPart implements Disconnectable {
         sanitizerFactoryInternal !== noopSanitizer
       ) {
         const parentNodeName = this[K._$startNode].parentNode?.nodeName;
-        if (parentNodeName === RK.STYLE || parentNodeName === RK.SCRIPT) {
+        if (parentNodeName === 'STYLE' || parentNodeName === 'SCRIPT') {
           if (DEV_MODE) {
             let message = 'Forbidden';
-            if (parentNodeName === RK.STYLE) {
+            if (parentNodeName === 'STYLE') {
               message =
                 `Lit does not support binding inside style nodes. ` +
                 `This is a security risk, as style injection attacks can ` +
@@ -1648,7 +1643,7 @@ class ChildPart implements Disconnectable {
       const node = wrap(this[K._$startNode]).nextSibling as Text;
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this[K._textSanitizer] === undefined) {
-          this[K._textSanitizer] = createSanitizer(node, RK.data, K.property);
+          this[K._textSanitizer] = createSanitizer(node, 'data', K.property);
         }
         value = this[K._textSanitizer](value);
       }
@@ -1670,7 +1665,7 @@ class ChildPart implements Disconnectable {
         if (this[K._textSanitizer] === undefined) {
           this[K._textSanitizer] = createSanitizer(
             textNode,
-            RK.data,
+            'data',
             K.property,
           );
         }
@@ -1705,7 +1700,7 @@ class ChildPart implements Disconnectable {
     // CompiledTemplateResult and _$litType$ is a CompiledTemplate and we need
     // to create the <template> element the first time we see it.
     let template: Template | CompiledTemplate;
-    if (isNumber(type)) {
+    if (typeof type === 'number') {
       template = this[K._$getTemplate](result as UncompiledTemplateResult);
     } else {
       if (type[K.el] === undefined) {
@@ -2203,7 +2198,7 @@ class EventPart extends AttributePart {
   }
 
   handleEvent(event: Event) {
-    if (isFunction(this[K._$committedValue])) {
+    if (typeof this[K._$committedValue] === 'function') {
       this[K._$committedValue].call(
         this[K.options]?.[K.host] ?? this[K.element],
         event,
@@ -2299,23 +2294,25 @@ export const _$LH = {
 };
 
 // Apply polyfills if available
-const polyfillSupport = DEV_MODE
-  ? global[K.litHtmlPolyfillSupportDevMode]
-  : global[K.litHtmlPolyfillSupport];
-polyfillSupport?.(Template, ChildPart);
+// const polyfillSupport = DEV_MODE
+//   ? global[K.litHtmlPolyfillSupportDevMode]
+//   : global[K.litHtmlPolyfillSupport];
+// polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-global[K.litHtmlVersions] ??= [];
-global[K.litHtmlVersions].push('');
-if (DEV_MODE && global[K.litHtmlVersions].length > 1) {
-  queueMicrotask(() => {
-    issueWarning!(
-      'multiple-versions',
-      `Multiple versions of Lit loaded. ` +
-        `Loading multiple versions is not recommended.`,
-    );
-  });
+if (DEV_MODE) {
+  global[K.litHtmlVersions] ??= [];
+  global[K.litHtmlVersions].push('');
+  if (global[K.litHtmlVersions].length > 1) {
+    queueMicrotask(() => {
+      issueWarning!(
+        'multiple-versions',
+        `Multiple versions of Lit loaded. ` +
+          `Loading multiple versions is not recommended.`,
+      );
+    });
+  }
 }
 
 /**

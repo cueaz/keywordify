@@ -8,12 +8,8 @@
  */
 
 import * as K from '~keywords';
-import * as RK from '~keywords/raw';
 
 const DEV_MODE = import.meta.custom.DEV_MODE;
-
-const isFunction = (v: unknown): v is AnyFunction => typeof v === RK.function;
-const isObject = (v: unknown): v is object => typeof v === RK.object;
 
 // An named symbol/brand for detecting Signal instances even when they weren't
 // created using the same signals library version.
@@ -809,7 +805,7 @@ function cleanupEffect(effect: Effect) {
   const cleanup = effect[K._cleanup];
   effect[K._cleanup] = undefined;
 
-  if (isFunction(cleanup)) {
+  if (typeof cleanup === 'function') {
     /*@__INLINE__*/ startBatch();
 
     // Run cleanup functions always outside of any context.
@@ -929,7 +925,7 @@ Effect.prototype[K._callback] = function () {
     if (this[K._fn] === undefined) return;
 
     const cleanup = this[K._fn]();
-    if (isFunction(cleanup)) {
+    if (typeof cleanup === 'function') {
       this[K._cleanup] = cleanup;
     }
   } finally {
@@ -1096,9 +1092,9 @@ const wrapInAction = (value: Record<string | symbol, unknown>) => {
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i]!;
     const val = value[key];
-    if (isFunction(val)) {
-      value[key] = action(val);
-    } else if (isObject(val) && val !== null) {
+    if (typeof val === 'function') {
+      value[key] = action(val as (...args: unknown[]) => unknown);
+    } else if (typeof val === 'object' && val !== null) {
       if (!(K.brand in val)) {
         // Recursively wrap nested object properties in actions. This allows users to write
         // nested models without worrying about wrapping their functions in `action`.
