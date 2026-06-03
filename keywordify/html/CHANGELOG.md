@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/cueaz/keywordify/compare/html-v1.1.2...html-v1.1.3) (2026-06-03)
+
+
+### Bug Fixes
+
+* hide brand symbol and make signals optional for html ([b894c91](https://github.com/cueaz/keywordify/commit/b894c9117cc8f13f2d1cbbef0d52da836e656d12))
+
 ## [1.1.2](https://github.com/cueaz/keywordify/compare/html-v1.1.1...html-v1.1.2) (2026-06-03)
 
 
