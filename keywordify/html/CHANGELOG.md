@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/cueaz/keywordify/compare/html-v1.1.1...html-v1.1.2) (2026-06-03)
+
+
+### Bug Fixes
+
+* drop raw keywords ([6fee55a](https://github.com/cueaz/keywordify/commit/6fee55acd97a203a24c2d63295aa03b563b7b457))
+
 ## [1.1.1](https://github.com/cueaz/keywordify/compare/html-v1.0.0...html-v1.1.1) (2026-06-02)
 
 
