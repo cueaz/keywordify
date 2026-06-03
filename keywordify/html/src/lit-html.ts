@@ -2274,7 +2274,23 @@ class ElementPart implements Disconnectable {
  *
  * @private
  */
-export const _$LH = {
+// Explicit type prevents tsc from evaluating computed keys to literals.
+export const _$LH: {
+  [K._boundAttributeSuffix]: typeof boundAttributeSuffix;
+  [K._marker]: typeof marker;
+  [K._markerMatch]: typeof markerMatch;
+  [K._HTML_RESULT]: typeof HTML_RESULT;
+  [K._getTemplateHtml]: typeof getTemplateHtml;
+  [K._TemplateInstance]: typeof TemplateInstance;
+  [K._isIterable]: typeof isIterable;
+  [K._resolveDirective]: typeof resolveDirective;
+  [K._ChildPart]: typeof ChildPart;
+  [K._AttributePart]: typeof AttributePart;
+  [K._BooleanAttributePart]: typeof BooleanAttributePart;
+  [K._EventPart]: typeof EventPart;
+  [K._PropertyPart]: typeof PropertyPart;
+  [K._ElementPart]: typeof ElementPart;
+} = {
   // Used in lit-ssr
   [K._boundAttributeSuffix]: boundAttributeSuffix,
   [K._marker]: marker,

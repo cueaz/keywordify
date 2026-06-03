@@ -46,7 +46,15 @@ export interface DirectiveResult<C extends DirectiveClass = DirectiveClass> {
   [K.values]: DirectiveParameters<InstanceType<C>>;
 }
 
-export const PartType = {
+// Explicit type prevents tsc from evaluating computed keys to literals.
+export const PartType: {
+  readonly [K.ATTRIBUTE]: 1;
+  readonly [K.CHILD]: 2;
+  readonly [K.PROPERTY]: 3;
+  readonly [K.BOOLEAN_ATTRIBUTE]: 4;
+  readonly [K.EVENT]: 5;
+  readonly [K.ELEMENT]: 6;
+} = {
   [K.ATTRIBUTE]: 1,
   [K.CHILD]: 2,
   [K.PROPERTY]: 3,

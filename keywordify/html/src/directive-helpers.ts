@@ -54,7 +54,12 @@ const wrap =
 export const isPrimitive = (value: unknown): value is Primitive =>
   value === null || (typeof value !== 'object' && typeof value !== 'function');
 
-export const TemplateResultType = {
+// Explicit type prevents tsc from evaluating computed keys to literals.
+export const TemplateResultType: {
+  readonly [K.HTML]: 1;
+  readonly [K.SVG]: 2;
+  readonly [K.MATHML]: 3;
+} = {
   [K.HTML]: 1,
   [K.SVG]: 2,
   [K.MATHML]: 3,
