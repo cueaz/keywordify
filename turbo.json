@@ -1,0 +1,47 @@
+{
+  "$schema": "./node_modules/turbo/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "typegen"],
+      "inputs": [
+        "src/**",
+        "rolldown.config.ts",
+        "../../rolldown-common.ts",
+        "tsconfig.json"
+      ],
+      "outputs": ["dist/**"]
+    },
+    "test": {
+      "dependsOn": ["^build", "typegen"],
+      "inputs": [
+        "src/**",
+        "test/**",
+        "vitest.config.ts",
+        "../../vitest-common.ts",
+        "../../rolldown-common.ts",
+        "tsconfig.json"
+      ]
+    },
+    "typegen": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**/*.{ts,tsx}", "test/**/*.{ts,tsx}"],
+      "outputs": ["node_modules/~keywords/**"]
+    },
+    "//#check:biome": {
+      "inputs": ["**", ".editorconfig", "biome.json"],
+      "dependsOn": []
+    },
+    "//#check:tsc": {
+      "inputs": [
+        "**/tsconfig.json",
+        "**/*.{ts,tsx}",
+        "rolldown-env.d.ts",
+        "tsconfig.base.json"
+      ],
+      "dependsOn": ["@keywordify/html#build", "@keywordify/signals#build"]
+    },
+    "//#check": {
+      "dependsOn": ["//#check:biome", "//#check:tsc"]
+    }
+  }
+}

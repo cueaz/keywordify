@@ -10,7 +10,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     env:
-      WIREIT_LOGGER: metrics
+      DO_NOT_TRACK: 1
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
@@ -19,7 +19,7 @@ jobs:
           node-version: 'lts/*'
           cache: 'pnpm'
       - run: pnpm ci
-      - run: pnpm run rbuild
-      - run: pnpm run rcheck
+      - run: pnpm run build
+      - run: pnpm run check
       - run: pnpm exec playwright install chromium --with-deps
-      - run: pnpm run rtest
+      - run: pnpm run test

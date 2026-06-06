@@ -6,11 +6,13 @@
   "type": "module",
   "sideEffects": false,
   "scripts": {
-    "rbuild": "wireit",
-    "rtest": "wireit",
-    "rtypegen": "wireit",
-    "rcheck": "wireit",
-    "clean:wireit": "find . -iname '.wireit' -type d | xargs -I{} rm -rf {}"
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typegen": "turbo run typegen",
+    "check": "turbo run check:biome check:tsc",
+    "check:biome": "biome check",
+    "check:tsc": "tsc --build",
+    "clean:turbo": "find . -iname '.turbo' -type d | xargs -I{} rm -rf {}"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -21,85 +23,10 @@
     "playwright": "catalog:",
     "rolldown": "catalog:",
     "rolldown-plugin-dts": "catalog:",
+    "turbo": "catalog:",
     "typescript": "catalog:",
     "unplugin-keywords": "catalog:",
     "vite": "catalog:",
-    "vitest": "catalog:",
-    "wireit": "catalog:"
-  },
-  "wireit": {
-    "rbuild": {
-      "dependencies": [
-        "./keywordify/html:build",
-        "./keywordify/signals:build"
-      ]
-    },
-    "rtest": {
-      "dependencies": [
-        "./keywordify/html:test",
-        "./keywordify/signals:test"
-      ]
-    },
-    "rtypegen": {
-      "dependencies": [
-        "./keywordify/html:typegen",
-        "./keywordify/signals:typegen"
-      ]
-    },
-    "rcheck": {
-      "dependencies": [
-        "rcheck:biome",
-        "rcheck:tsc"
-      ]
-    },
-    "rcheck:biome": {
-      "command": "biome check",
-      "dependencies": [
-        "rfiles:biome"
-      ],
-      "files": [
-        "**",
-        "!**/dist/**"
-      ],
-      "output": []
-    },
-    "rcheck:tsc": {
-      "command": "tsc --build",
-      "dependencies": [
-        "rfiles:tsc",
-        "rbuild"
-      ],
-      "files": [
-        "**/tsconfig.json",
-        "**/*.{ts,tsx}",
-        "!**/dist/**"
-      ],
-      "output": []
-    },
-    "rfiles:rolldown": {
-      "files": [
-        "rolldown-common.ts"
-      ]
-    },
-    "rfiles:vitest": {
-      "dependencies": [
-        "rfiles:rolldown"
-      ],
-      "files": [
-        "vitest-common.ts"
-      ]
-    },
-    "rfiles:biome": {
-      "files": [
-        ".editorconfig",
-        "biome.json"
-      ]
-    },
-    "rfiles:tsc": {
-      "files": [
-        "rolldown-env.d.ts",
-        "tsconfig.base.ts"
-      ]
-    }
+    "vitest": "catalog:"
   }
 }

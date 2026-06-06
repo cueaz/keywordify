@@ -27,67 +27,8 @@
   },
   "scripts": {
     "prepack": "clean-pkg-json --keep keywordified",
-    "build": "wireit",
-    "build:rolldown": "wireit",
-    "test": "wireit",
-    "test:vitest": "wireit",
-    "typegen": "wireit",
-    "typegen:keywords": "wireit"
-  },
-  "wireit": {
-    "build": {
-      "dependencies": [
-        "build:rolldown"
-      ]
-    },
-    "test": {
-      "dependencies": [
-        "test:vitest"
-      ]
-    },
-    "typegen": {
-      "dependencies": [
-        "typegen:keywords"
-      ]
-    },
-    "deps:runtime": {
-      "command": "true"
-    },
-    "build:rolldown": {
-      "command": "rolldown --config",
-      "dependencies": [
-        "../..:rfiles:rolldown",
-        "typegen"
-      ],
-      "files": [
-        "src/**",
-        "rolldown.config.ts"
-      ],
-      "output": [
-        "dist/**"
-      ]
-    },
-    "test:vitest": {
-      "command": "vitest run",
-      "dependencies": [
-        "../..:rfiles:vitest",
-        "deps:runtime",
-        "typegen"
-      ],
-      "files": [
-        "{src,test}/**",
-        "vitest.config.ts"
-      ],
-      "output": []
-    },
-    "typegen:keywords": {
-      "command": "keywords",
-      "files": [
-        "{src,test}/**/*.{ts,tsx}"
-      ],
-      "output": [
-        "node_modules/~keywords/**"
-      ]
-    }
+    "build": "rolldown --config",
+    "test": "vitest run",
+    "typegen": "keywords"
   }
 }

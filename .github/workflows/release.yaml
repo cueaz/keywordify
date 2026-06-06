@@ -13,6 +13,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      DO_NOT_TRACK: 1
     steps:
       - uses: googleapis/release-please-action@v5
         id: release
@@ -27,7 +29,7 @@ jobs:
           cache: 'pnpm'
       - run: pnpm ci
         if: ${{ steps.release.outputs.releases_created }}
-      - run: pnpm run rbuild
+      - run: pnpm run build
         if: ${{ steps.release.outputs.releases_created }}
       - run: pnpm publish --recursive
         if: ${{ steps.release.outputs.releases_created }}
