@@ -22,8 +22,8 @@ catalogs:
       specifier: ^4.1.7
       version: 4.1.7
     clean-pkg-json:
-      specifier: ^1.4.2
-      version: 1.4.2
+      specifier: ^2.0.0
+      version: 2.0.0
     playwright:
       specifier: ^1.60.0
       version: 1.60.0
@@ -67,7 +67,7 @@ importers:
         version: 4.1.7(playwright@1.60.0)(vite@8.0.14(@types/node@25.9.1))(vitest@4.1.7)
       clean-pkg-json:
         specifier: 'catalog:'
-        version: 1.4.2
+        version: 2.0.0
       playwright:
         specifier: 'catalog:'
         version: 1.60.0
@@ -584,8 +584,9 @@ packages:
     resolution: {integrity: sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==}
     engines: {node: '>=18'}
 
-  clean-pkg-json@1.4.2:
-    resolution: {integrity: sha512-o201s9wWOYoZSRui4QyARSFc3n0IcYDu62hkJCQGX1eshSSQ/90QhS/KveWp/QlXSqcF/g/q2+IINj25V1BMKw==}
+  clean-pkg-json@2.0.0:
+    resolution: {integrity: sha512-HfgaeXf7xc2xEg28rKAb6iJ7KaBU6Bu1F+wefBUEm142fYvnn+dKuBg2WEwjv7hIs1S4tu/qdLK9wek03OolBQ==}
+    engines: {node: '>=22'}
     hasBin: true
 
   convert-source-map@2.0.0:
@@ -1425,7 +1426,7 @@ snapshots:
 
   chai@6.2.2: {}
 
-  clean-pkg-json@1.4.2: {}
+  clean-pkg-json@2.0.0: {}
 
   convert-source-map@2.0.0: {}
 
