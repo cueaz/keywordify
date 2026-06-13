@@ -7,7 +7,7 @@ catalog:
   '@types/node': ^25.9.1
   '@types/trusted-types': ^2.0.7
   '@vitest/browser-playwright': ^4.1.7
-  clean-pkg-json: ^1.4.2
+  clean-pkg-json: ^2.0.0
   playwright: ^1.60.0
   rolldown: ^1.0.3
   rolldown-plugin-dts: ^0.25.2
