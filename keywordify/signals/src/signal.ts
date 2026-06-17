@@ -400,14 +400,7 @@ Signal.prototype[K.subscribe] = function (fn) {
   return effect(
     () => {
       const value = this[K.value];
-      const prevContext = evalContext;
-      evalContext = undefined;
-      try {
-        fn(value);
-      } finally {
-        evalContext = prevContext;
-      }
-      return undefined;
+      untracked(() => fn(value));
     },
     { [K.name]: K.sub },
   );
@@ -624,15 +617,12 @@ const Computed = function (
   fn: () => unknown,
   options?: SignalOptions,
 ) {
-  Signal.call(this, undefined);
+  Signal.call(this, undefined, options);
 
   this[K._fn] = fn;
   this[K._sources] = undefined;
   this[K._globalVersion] = globalVersion - 1;
   this[K._flags] = OUTDATED;
-  this[K._watched] = options?.[K.watched];
-  this[K._unwatched] = options?.[K.unwatched];
-  this[K.name] = options?.[K.name];
 } as unknown as ComputedConstructor;
 
 (Computed as unknown as { prototype: Computed }).prototype =
