@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/cueaz/keywordify/compare/signals-v1.1.3...signals-v1.1.4) (2026-06-17)
+
+
+### Bug Fixes
+
+* **signals:** track upstream changes ([a98c8b5](https://github.com/cueaz/keywordify/commit/a98c8b5eb69a00da3ca78b5d2fa76936328e8073))
+
 ## [1.1.3](https://github.com/cueaz/keywordify/compare/signals-v1.1.2...signals-v1.1.3) (2026-06-03)
 
 
