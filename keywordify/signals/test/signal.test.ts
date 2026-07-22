@@ -10,6 +10,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as K from '~keywords';
 import {
+  action,
   batch,
   computed,
   createModel,
@@ -919,6 +920,57 @@ describe('effect()', () => {
       foo[K.value] = 42;
     });
     expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('should not rerun an effect subscribed through a computed for a no-op batch assignment', () => {
+    const foo = signal(42);
+    const double = computed(() => foo[K.value] * 2);
+    const spy = vi.fn(() => {
+      double[K.value];
+    });
+
+    effect(spy);
+    expect(spy).toHaveBeenCalledOnce();
+    spy.mockClear();
+
+    batch(() => {
+      foo[K.value] = 0;
+      foo[K.value] = 42;
+    });
+
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('should keep unsubscribed computeds coherent when they are read during a reverted batch', () => {
+    const foo = signal('A');
+    const double = computed(() => foo[K.value] + '!');
+    expect(double[K.value]).toBe('A!');
+
+    batch(() => {
+      foo[K.value] = 'B';
+      // A lazy read inside the batch observes the intermediate version.
+      expect(double[K.value]).toBe('B!');
+      foo[K.value] = 'A';
+    });
+
+    // The next write must not collide with the version observed mid-batch.
+    foo[K.value] = 'C';
+    expect(double[K.value]).toBe('C!');
+  });
+
+  it('should keep unsubscribed computeds coherent when they are peeked during a reverted batch', () => {
+    const foo = signal(1);
+    const double = computed(() => foo[K.value] * 2);
+    expect(double[K.peek]()).toBe(2);
+
+    batch(() => {
+      foo[K.value] = 2;
+      expect(double[K.peek]()).toBe(4);
+      foo[K.value] = 1;
+    });
+
+    foo[K.value] = 3;
+    expect(double[K.peek]()).toBe(6);
   });
 
   it("should not rerun parent effect if a nested child effect's signal's value changes", () => {
@@ -2716,6 +2768,157 @@ describe('createModel', () => {
 
     expect(() => new ErrorModel()).to.throw('Factory error');
     expect(effectRan).to.equal(true); // Effect runs before error is thrown
+  });
+
+  it('does not capture effects created inside untracked callbacks', () => {
+    let runs = 0;
+    const cleanup = vi.fn();
+    let disposeEffect!: () => void;
+
+    const TestModel = createModel(() => {
+      const count = signal(0);
+
+      untracked(() => {
+        disposeEffect = effect(() => {
+          count[K.value];
+          runs++;
+          return cleanup;
+        });
+      });
+
+      return { count };
+    });
+
+    const model = new TestModel();
+    expect(runs).to.equal(1);
+
+    model[Symbol.dispose]();
+    expect(cleanup).not.toHaveBeenCalled();
+
+    model.count[K.value]++;
+    expect(runs).to.equal(2);
+    expect(cleanup).toHaveBeenCalledTimes(1);
+
+    disposeEffect();
+    expect(cleanup).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not capture effects created inside action callbacks', () => {
+    let runs = 0;
+    const cleanup = vi.fn();
+    let disposeEffect!: () => void;
+
+    const TestModel = createModel(() => {
+      const count = signal(0);
+
+      const createExternalEffect = action(() => {
+        disposeEffect = effect(() => {
+          count[K.value];
+          runs++;
+          return cleanup;
+        });
+      });
+
+      createExternalEffect();
+
+      return { count };
+    });
+
+    const model = new TestModel();
+    expect(runs).to.equal(1);
+
+    model[Symbol.dispose]();
+    expect(cleanup).not.toHaveBeenCalled();
+
+    model.count[K.value]++;
+    expect(runs).to.equal(2);
+    expect(cleanup).toHaveBeenCalledTimes(1);
+
+    disposeEffect();
+    expect(cleanup).toHaveBeenCalledTimes(2);
+  });
+
+  it('lets nested models created inside untracked capture their own effects without promoting them to the outer model', () => {
+    let outerRuns = 0;
+    let innerRuns = 0;
+    const outerCleanup = vi.fn();
+    const innerCleanup = vi.fn();
+
+    const InnerModel = createModel(() => {
+      const count = signal(0);
+
+      effect(() => {
+        count[K.value];
+        innerRuns++;
+        return innerCleanup;
+      });
+
+      return { count };
+    });
+
+    const OuterModel = createModel(() => {
+      const outerCount = signal(0);
+
+      effect(() => {
+        outerCount[K.value];
+        outerRuns++;
+        return outerCleanup;
+      });
+
+      const inner = untracked(() => new InnerModel());
+      return { outerCount, inner };
+    });
+
+    const outer = new OuterModel();
+    expect(outerRuns).to.equal(1);
+    expect(innerRuns).to.equal(1);
+
+    outer[Symbol.dispose]();
+    expect(outerCleanup).toHaveBeenCalledTimes(1);
+    expect(innerCleanup).not.toHaveBeenCalled();
+
+    outer.outerCount[K.value]++;
+    expect(outerRuns).to.equal(1);
+
+    outer.inner.count[K.value]++;
+    expect(innerRuns).to.equal(2);
+    expect(innerCleanup).toHaveBeenCalledTimes(1);
+
+    outer.inner[Symbol.dispose]();
+    expect(innerCleanup).toHaveBeenCalledTimes(2);
+  });
+
+  it('restores model effect capture when untracked callbacks throw inside model factories', () => {
+    let runs = 0;
+    const cleanup = vi.fn();
+
+    const TestModel = createModel(() => {
+      const count = signal(0);
+
+      try {
+        untracked(() => {
+          throw new Error('transient');
+        });
+      } catch {}
+
+      effect(() => {
+        count[K.value];
+        runs++;
+        return cleanup;
+      });
+
+      return { count };
+    });
+
+    const model = new TestModel();
+    expect(runs).to.equal(1);
+
+    model[Symbol.dispose]();
+    expect(cleanup).toHaveBeenCalledTimes(1);
+
+    model.count[K.value]++;
+    expect(runs).to.equal(1);
+    expect(cleanup).toHaveBeenCalledTimes(1);
   });
 
   describe('model composition', () => {

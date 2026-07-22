@@ -118,20 +118,35 @@ function batch<T>(fn: () => T): T {
 // Currently evaluated computed or effect.
 let evalContext: Computed | Effect | undefined;
 
+// Effects captured while constructing a model instance.
+let capturedEffects: Effect[] | undefined;
+
 /**
  * Run a callback function that can access signal values without
  * subscribing to the signal updates.
+ *
+ * When called inside a `createModel` factory, this also suppresses
+ * model-owned effect capture. Effects created inside the callback will not
+ * be owned by the surrounding model and must be disposed manually. Nested
+ * `createModel` calls inside the callback still capture their own effects.
  *
  * @param fn The callback function.
  * @returns The value returned by the callback.
  */
 function untracked<T>(fn: () => T): T {
   const prevContext = evalContext;
+  const prevCapturedEffects = capturedEffects;
+
   evalContext = undefined;
+  // Model effect capture is another kind of ambient tracking. Suppress it in
+  // untracked callbacks while still allowing nested createModel() calls to
+  // establish their own capture scope.
+  capturedEffects = undefined;
   try {
     return fn();
   } finally {
     evalContext = prevContext;
+    capturedEffects = prevCapturedEffects;
   }
 }
 
@@ -177,8 +192,24 @@ function reconcileBatchSnapshots() {
   batchSnapshots = undefined;
 
   while (snapshots !== undefined) {
-    if (snapshots[K._source][K._value] === snapshots[K._value]) {
-      snapshots[K._source][K._version] = snapshots[K._version];
+    const source = snapshots[K._source];
+    if (source[K._value] === snapshots[K._value]) {
+      // The value was reverted to its pre-batch state. Version numbers must
+      // stay monotonic: a lazy computed may have observed an intermediate
+      // version during the batch, and rolling the version back would let a
+      // future write re-mint that observed number for a different value,
+      // making the computed treat it as unchanged forever. Instead,
+      // fast-forward subscribers that last saw the pre-batch version so
+      // they skip recomputing for the no-op change.
+      for (
+        let node = source[K._targets];
+        node !== undefined;
+        node = node[K._nextTarget]
+      ) {
+        if (node[K._version] === snapshots[K._version]) {
+          node[K._version] = source[K._version];
+        }
+      }
     }
     snapshots = snapshots[K._next];
   }
@@ -889,8 +920,6 @@ export interface EffectOptions {
   [K.name]?: string | undefined;
 }
 
-let capturedEffects: Effect[] | undefined;
-
 /** @internal */
 const Effect = function (this: Effect, fn: EffectFn, options?: EffectOptions) {
   this[K._fn] = fn;
@@ -1060,6 +1089,9 @@ interface InternalModelConstructor<TModel, TFactoryArgs extends unknown[]>
 
 function startCapturingEffects(): () => Effect[] | undefined {
   let prevCapturedEffects = capturedEffects;
+  // Always establish a fresh capture scope, even when `untracked()` has
+  // temporarily cleared the parent scope. This lets nested models own their
+  // effects without promoting them to a suppressed outer scope.
   capturedEffects = [];
 
   return function stopCapturingEffects() {
