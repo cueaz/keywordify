@@ -32,7 +32,7 @@ catalogs:
       version: 1.2.3
     rolldown-plugin-dts:
       specifier: ^0.28.0
-      version: 0.28.0
+      version: 0.28.1
     turbo:
       specifier: ^2.10.5
       version: 2.10.9
@@ -76,7 +76,7 @@ importers:
         version: 1.2.3
       rolldown-plugin-dts:
         specifier: 'catalog:'
-        version: 0.28.0(rolldown@1.2.3)(typescript@6.0.3)
+        version: 0.28.1(rolldown@1.2.3)(typescript@6.0.3)
       turbo:
         specifier: 'catalog:'
         version: 2.10.9
@@ -813,8 +813,8 @@ packages:
   resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
 
-  rolldown-plugin-dts@0.28.0:
-    resolution: {integrity: sha512-Ip/B9B0IK3OLBj0tl59yAfQgbHBicLE5GQ04+6eJoniZ1HKNCpf49NzmBC4SfIg1cIvKr0n0mUQe8mG6UrJHbw==}
+  rolldown-plugin-dts@0.28.1:
+    resolution: {integrity: sha512-/L3joWaepvZehTxe0w+9xoo7xVxgXFb8XBnn8fXsbsliHbYju0CDEhvq6TXFoLn51vNIJergXxMGE480UxUrww==}
     engines: {node: ^22.18.0 || ^24.11.0 || >=26.0.0}
     peerDependencies:
       '@typescript/native-preview': '*'
@@ -1583,7 +1583,7 @@ snapshots:
 
   resolve-pkg-maps@1.0.0: {}
 
-  rolldown-plugin-dts@0.28.0(rolldown@1.2.3)(typescript@6.0.3):
+  rolldown-plugin-dts@0.28.1(rolldown@1.2.3)(typescript@6.0.3):
     dependencies:
       dts-resolver: 3.0.0
       get-tsconfig: 5.0.0-beta.5
