@@ -11,7 +11,7 @@ catalogs:
       version: 2.5.8
     '@tsconfig/bases':
       specifier: ^1.0.26
-      version: 1.0.26
+      version: 1.0.27
     '@types/node':
       specifier: ^26.1.1
       version: 26.2.0
@@ -58,7 +58,7 @@ importers:
         version: 2.5.8
       '@tsconfig/bases':
         specifier: 'catalog:'
-        version: 1.0.26
+        version: 1.0.27
       '@types/node':
         specifier: 'catalog:'
         version: 26.2.0
@@ -341,8 +341,8 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@tsconfig/bases@1.0.26':
-    resolution: {integrity: sha512-kRHl2afbyBACxK3WBWNrqFJV9bWk7lLmCAdnKu5hO3v3QHFu5Ghdt6jqsAPr5ZwpJ3fHRQttFCMpO0Mhhufv1w==}
+  '@tsconfig/bases@1.0.27':
+    resolution: {integrity: sha512-uqv77XW72Hxm75D4IHoChy0jKMkRJYy87L7L9a2YIMBvY68Jh51G/x4i5ZxKmIv3IM4Fvp/673mIcqZXVO5AYA==}
 
   '@turbo/darwin-64@2.10.10':
     resolution: {integrity: sha512-gFDD+wRP5hWxBRghGyEbjpbLOY7aIU/wvsnKdMM7odQcp/wHMrnI83p0FyxxMRZnFH9ZD+S59MvcpOC5b+nrCA==}
@@ -1244,7 +1244,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tsconfig/bases@1.0.26': {}
+  '@tsconfig/bases@1.0.27': {}
 
   '@turbo/darwin-64@2.10.10':
     optional: true
