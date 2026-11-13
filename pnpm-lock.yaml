@@ -169,7 +169,7 @@ catalogs:
       version: 2.5.15
     '@tsconfig/bases':
       specifier: ^1.0.26
-      version: 1.0.28
+      version: 1.0.30
     '@types/node':
       specifier: ^26.1.1
       version: 26.6.6
@@ -216,7 +216,7 @@ importers:
         version: 2.5.15
       '@tsconfig/bases':
         specifier: 'catalog:'
-        version: 1.0.28
+        version: 1.0.30
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.6
@@ -627,8 +627,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@tsconfig/bases@1.0.28':
-    resolution: {integrity: sha512-l326opM2+2gDiv3fYIzy12IeUJkHwNbt9pI+Ww2Byk4D1AfJt+CJmbiIxXtWaxY06514pAO5YXBneufph9WKFQ==}
+  '@tsconfig/bases@1.0.30':
+    resolution: {integrity: sha512-YsQOdAPkOhFnKVYMmM2MhBqIdUnQ/mKoS0rln32j0SmPg/tF+fFBdzqVR5yEJHhbQJ0A2ux6m6tFCaucAGmMFQ==}
 
   '@turbo/darwin-64@2.11.11':
     resolution: {integrity: sha512-HMMeUIEAsmyIbSYn1ySvF/4gGMa0joiTMq4dQDuloIAnOpbtFT3JEiVsYnASdTWDXvplbRbZlqjU1EBeSR9G1A==}
@@ -1524,7 +1524,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@tsconfig/bases@1.0.28': {}
+  '@tsconfig/bases@1.0.30': {}
 
   '@turbo/darwin-64@2.11.11':
     optional: true
